@@ -83,11 +83,11 @@
     <p>Predictions reflect directional decay risk rather than causal guarantees. Unobserved factors such as Google core algorithm updates, competitor backlink acquisition, or macroeconomic seasonality are not present in the features. The output is intended for <strong>editorial decision support</strong>, not automated unvetted updates.</p>
 
     <h2>6. Ranked Action Playbook</h2>
-    <p>Recommended URLs are grouped into three operational tiers based on predicted decay probability $P(\text{declining})$:</p>
+    <p>Recommended URLs are grouped into three operational tiers based on predicted decay probability P(declining):</p>
     <ul>
-        <li><code>PRIORITY_REFRESH</code> ($P \ge 0.70$): Immediate editorial update brief required. Update outdated facts, address intent shifts, and optimize meta tags.</li>
-        <li><code>MONITOR_TRAJECTORY</code> ($0.40 \le P < 0.70$): Place on 30-day monitoring queue; review if impression trajectory continues declining.</li>
-        <li><code>NO_ACTION</code> ($P < 0.40$): Page is performing normally; do not disrupt existing search rankings.</li>
+        <li><code>PRIORITY_REFRESH</code> (P ≥ 0.70): Immediate editorial update brief required. Update outdated facts, address intent shifts, and optimize meta tags.</li>
+        <li><code>MONITOR_TRAJECTORY</code> (0.40 ≤ P &lt; 0.70): Place on 30-day monitoring queue; review if impression trajectory continues declining.</li>
+        <li><code>NO_ACTION</code> (P &lt; 0.40): Page is performing normally; do not disrupt existing search rankings.</li>
     </ul>
 
     <h2>7. Reproducibility & Repository Code</h2>
