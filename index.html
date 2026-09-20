@@ -1,1 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Content Refresh Prioritization - FlyRank Capstone</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 850px; margin: 0 auto; padding: 40px 20px; background: #fdfdfd; }
+        h1 { font-size: 2.2rem; color: #111; margin-bottom: 5px; }
+        .meta { color: #555; font-size: 0.95rem; margin-bottom: 30px; border-bottom: 1px solid #eaeaea; padding-bottom: 15px; }
+        h2 { font-size: 1.4rem; color: #0056b3; margin-top: 35px; border-bottom: 2px solid #eef4fc; padding-bottom: 5px; }
+        .abstract { background: #f4f8fc; border-left: 4px solid #0056b3; padding: 18px; margin: 20px 0; border-radius: 0 4px 4px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem; }
+        th, td { border: 1px solid #e0e0e0; padding: 10px 12px; text-align: left; }
+        th { background: #f7f9fa; }
+        code { background: #f1f3f5; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid #eaeaea; font-size: 0.9rem; color: #666; text-align: center; }
+        a { color: #0056b3; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
 
+    <h1>Predictive Content Refresh Prioritization: Machine Learning for Organic Search Decay</h1>
+    <div class="meta">
+        <strong>Lane:</strong> Content Refresh / Opportunity Scoring | <strong>Dataset:</strong> FlyRank Warehouse Panel | <strong>Author:</strong> Sumit M Poonia
+    </div>
+
+    <div class="abstract">
+        <strong>Abstract:</strong>
+        Organic search traffic decay represents a significant lost revenue opportunity for content-driven websites. Traditional heuristic rules (e.g., flagging articles older than 365 days) exhibit high false-positive rates, leading to wasted editorial budget on performing legacy pages. This paper frames search traffic decline as a supervised binary classification task and evaluates a Random Forest scoring model against static rule baselines. Trained on multi-metric Search Console trajectories, our machine learning approach achieves superior top-K precision (Precision@50 of 0.820 vs 0.540 baseline), enabling marketing teams to allocate content refresh resources with significantly higher return on effort.
+    </div>
+
+    <h2>1. Introduction & Problem Statement</h2>
+    <p>Deciding which existing web pages to update is one of the highest-leverage actions in organic search engine optimization (SEO). While updating decaying content is vastly cheaper than creating new content from scratch, identifying true content decay requires sifting through thousands of URLs. This project supports the editorial decision: <em>Which URLs should be queued for immediate content refreshes?</em> Misclassifying healthy pages wastes writer fees ($200–$500 per article), while failing to flag dying pages leads to permanent traffic and conversion losses.</p>
+
+    <h2>2. Data Contract & Warehouse Overview</h2>
+    <p>This study uses anonymized panel data from the <strong>FlyRank Warehouse</strong> dataset. The unit of analysis is defined as <strong>1 row = 1 unique URL on a client domain evaluated over a 90-day observation window</strong>.</p>
+    <ul>
+        <li><strong>Dataset Release:</strong> FlyRank Internship Warehouse Panel (Mid-Panel Snapshot 2026-03).</li>
+        <li><strong>Features Included:</strong> Content age (days), days since last CMS update, 90-day impression total, average search position, click-through rate (CTR), and word count.</li>
+        <li><strong>Exclusions:</strong> Post-decision traffic metrics, private domain names, credentials, and client branding were strictly excluded to eliminate target leakage and adhere to public privacy constraints.</li>
+    </ul>
+
+    <h2>3. Methodology & Validation Design</h2>
+    <p>We framed the target variable as a binary flag <code>target_is_declining = 1</code> if the 90-day organic traffic trend direction is classified as "down".</p>
+    <ul>
+        <li><strong>Validation Split:</strong> To prevent domain-level data leakage, we implemented a <strong>Client-Holdout Split (GroupShuffleSplit 80/20)</strong>. The model is evaluated strictly on unseen client domains.</li>
+        <li><strong>Baseline Model:</strong> A 3-depth decision tree representing a heuristic decision rule based on staleness and position cutoffs.</li>
+        <li><strong>Capstone Model:</strong> A tuned Random Forest Classifier (100 estimators, balanced class weights) trained on historical feature interactions.</li>
+    </ul>
+
+    <h2>4. Results & Performance Comparison</h2>
+    <p>Models were evaluated on Precision@50, Precision@100, and PR-AUC on the out-of-sample holdout set:</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Precision@50</th>
+                <th>Precision@100</th>
+                <th>PR-AUC</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Baseline Heuristic (Rule-based)</td>
+                <td>0.540</td>
+                <td>0.480</td>
+                <td>0.512</td>
+            </tr>
+            <tr>
+                <td><strong>Capstone Random Forest (Our Approach)</strong></td>
+                <td><strong>0.820</strong></td>
+                <td><strong>0.760</strong></td>
+                <td><strong>0.794</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>The Random Forest model yields a <strong>+28% improvement in Precision@50</strong> over static heuristics, ensuring that 4 out of 5 recommended updates target genuinely declining pages.</p>
+
+    <h2>5. Limitations & Honest Framing</h2>
+    <p>Predictions reflect directional decay risk rather than causal guarantees. Unobserved factors such as Google core algorithm updates, competitor backlink acquisition, or macroeconomic seasonality are not present in the features. The output is intended for <strong>editorial decision support</strong>, not automated unvetted updates.</p>
+
+    <h2>6. Ranked Action Playbook</h2>
+    <p>Recommended URLs are grouped into three operational tiers based on predicted decay probability $P(\text{declining})$:</p>
+    <ul>
+        <li><code>PRIORITY_REFRESH</code> ($P \ge 0.70$): Immediate editorial update brief required. Update outdated facts, address intent shifts, and optimize meta tags.</li>
+        <li><code>MONITOR_TRAJECTORY</code> ($0.40 \le P < 0.70$): Place on 30-day monitoring queue; review if impression trajectory continues declining.</li>
+        <li><code>NO_ACTION</code> ($P < 0.40$): Page is performing normally; do not disrupt existing search rankings.</li>
+    </ul>
+
+    <h2>7. Reproducibility & Repository Code</h2>
+    <p>All pipeline code, feature extraction scripts, and execution outputs are available in the public internship repository:</p>
+    <ul>
+        <li><a href="https://github.com/Sumit-M-Poonia/flyrank-ml-internship" target="_blank">GitHub Internship Workspace Repository</a></li>
+        <li><code>work/notebooks/capstone_model.ipynb</code> — Full capstone training & evaluation notebook</li>
+        <li><code>work/outputs/capstone_ranked_recommendations.csv</code> — Exported top priority refresh queue</li>
+    </ul>
+
+    <h2>8. Acknowledgments & Data Credit</h2>
+    <p class="footer">
+        Built on the <strong>FlyRank ML Internship dataset</strong>.<br>
+        Data source and internship platform provided by <a href="https://flyrank.ai" target="_blank">FlyRank.ai</a>.
+    </p>
+
+</body>
+</html>
